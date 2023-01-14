@@ -1,7 +1,7 @@
 use crate::parser::{Parser, CheckForStringResult, SkipWhitespaceResult, ParseFunctionIdentifierResult};
 use crate::error::{Error, ErrorCode};
 
-pub fn parse_function(parser: &mut Parser) -> ParseFunctionResult {	
+pub fn parse_function<'a>(parser: &'a mut Parser<'a>) -> ParseFunctionResult<'a> {	
 	match parser.check_for_string("fn") {
 		CheckForStringResult::Error(error) => {
 			return ParseFunctionResult::Error(error)
@@ -41,13 +41,48 @@ pub fn parse_function(parser: &mut Parser) -> ParseFunctionResult {
 		}
 	}
 	
-	println!("The function name is: {}", identifier);
+	println!("entering low debug stage of function parsing");
+	match parser.check_for_string("() {") {
+		CheckForStringResult::Error(error) => {
+			return ParseFunctionResult::Error(error)
+		},
+		CheckForStringResult::StartedAtBufferEnd => {
+			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::FunctionNeverEnds))
+		},
+		CheckForStringResult::FoundNothing => {
+			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::FunctionNeverEnds))
+		},
+		CheckForStringResult::FoundIt => {}
+	}
+	
+	match parser.skip_whitespace() {
+		SkipWhitespaceResult::Error(error) => {
+			return ParseFunctionResult::Error(error)
+		},
+		SkipWhitespaceResult::ReachedBufferEnd => {
+			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::FunctionNeverEnds))
+		},
+		SkipWhitespaceResult::DidIt => {}
+	}
+	
+	match parser.check_for_string("}") {
+		CheckForStringResult::Error(error) => {
+			return ParseFunctionResult::Error(error)
+		},
+		CheckForStringResult::StartedAtBufferEnd => {
+			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::FunctionNeverEnds))
+		},
+		CheckForStringResult::FoundNothing => {
+			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::FunctionNeverEnds))
+		},
+		CheckForStringResult::FoundIt => {}
+	}
 	
 	return ParseFunctionResult::Error(Error::new_tell(ErrorCode::NotImplemented))
 }
 
-pub enum ParseFunctionResult {
-	Error(Error),
+pub enum ParseFunctionResult<'a> {
+	Error(Error<'a>),
 	StartedAtBufferEnd,
 	NoFunction
 }

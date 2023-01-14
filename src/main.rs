@@ -36,7 +36,7 @@ fn run_rss(code_buf: &str) -> RunRssResult {
 	return RunRssResult::Error(Error::new_tell(ErrorCode::NothingFittingFound));
 }
 
-enum RunRssResult {
+enum RunRssResult<'a> {
 	Finished,
-	Error(Error)
+	Error(Error<'a>)
 }

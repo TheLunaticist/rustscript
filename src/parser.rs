@@ -14,7 +14,7 @@ impl<'a> Parser<'a> {
 		}
 	}
 	
-	pub fn check_for_string(&mut self, string: &str) -> CheckForStringResult {
+	pub fn check_for_string(&'a mut self, string: &str) -> CheckForStringResult<'a> {
 		let start_pos = self.crawler.get_pos();
 		let mut on_first_char = true; 
 		
@@ -45,7 +45,7 @@ impl<'a> Parser<'a> {
 		return CheckForStringResult::FoundIt
 	}
 	
-	pub fn skip_whitespace(&mut self) -> SkipWhitespaceResult {
+	pub fn skip_whitespace(&'a mut self) -> SkipWhitespaceResult<'a> {
 		loop {
 			let last_pos = self.crawler.get_pos();
 			match self.crawler.get_next() {
@@ -100,21 +100,21 @@ impl<'a> Parser<'a> {
 	}
 }
 
-pub enum CheckForStringResult {
-	Error(Error),
+pub enum CheckForStringResult<'a> {
+	Error(Error<'a>),
 	StartedAtBufferEnd,
 	FoundNothing,
 	FoundIt
 }
 
-pub enum SkipWhitespaceResult {
-	Error(Error),
+pub enum SkipWhitespaceResult<'a> {
+	Error(Error<'a>),
 	ReachedBufferEnd,
 	DidIt
 }
 
 pub enum ParseFunctionIdentifierResult<'a> {
-	Error(Error),
+	Error(Error<'a>),
 	GotIt(&'a str),
 	ReachedBufferEnd,
 	FoundNothing

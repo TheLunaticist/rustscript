@@ -1,8 +1,8 @@
 use crate::error::{Error, ErrorCode};
 
 pub struct ByteCrawler<'a> {
-	buf: &'a [u8],
-	pos: usize
+	pub buf: &'a [u8],
+	pub pos: mut usize
 }
 
 impl<'a> ByteCrawler<'a> {
@@ -13,7 +13,7 @@ impl<'a> ByteCrawler<'a> {
 		}
 	}
 	
-	pub fn get_next(&mut self) -> GetNextResult {
+	pub fn get_next(buf: &[u8], pos: &mut usize) -> GetNextResult {
 		const MASK_FIRST_BIT: u8 =  0b10000000;
 		const MASK_SECOND_BIT: u8 = 0b01000000;
 		const MASK_THIRD_BIT: u8 =  0b00100000;
@@ -84,8 +84,8 @@ impl<'a> ByteCrawler<'a> {
 	}
 }
 
-pub enum GetNextResult {
+pub enum GetNextResult<'a> {
 	GotChar(char),
 	ReachedBufferEnd,
-	Error(Error)
+	Error(Error<'a>)
 }

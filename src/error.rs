@@ -1,13 +1,20 @@
-pub struct Error {
-	error_type: ErrorType,
+pub struct Error<'a> {
+	error_type: ErrorType<'a>,
 	code: ErrorCode
 }
 
-impl Error {
+impl<'a> Error<'a> {
 	pub fn new_tell(code: ErrorCode) -> Self {
 		Self {
 			code: code,
 			error_type: ErrorType::Tell
+		}
+	}
+	
+	pub fn new_show(code: ErrorCode, excerpt: Excerpt<'a>) -> Self {
+		Self {
+			code: code,
+			error_type: ErrorType::Show(excerpt)
 		}
 	}
 	
@@ -36,8 +43,45 @@ impl Error {
 		}
 		
 		match self.error_type {
-			ErrorType::Tell => {}
+			ErrorType::Tell => {},
+			ErrorType::Show(excerpt) => {
+				excerpt.print();
+			}
 		}
+	}
+}
+
+struct Excerpt<'a> {
+	excerpt: &'a str,
+	mark_start: usize,
+	mark_size: usize
+}
+
+impl<'a> Excerpt<'a> {
+	pub fn new(buf: &str, start: usize, size: usize) -> Self {
+		Excerpt {
+			excerpt: buf,
+			mark_start: start,
+			mark_size: size
+		}
+	}
+	
+	pub fn print(&self) {
+		print!("{}", self.excerpt);
+		
+		for c in self.excerpt.chars() {
+			print!("{c}");
+		}
+		
+		for _ in 0..(self.mark_start) {
+			print!("{}", ' ');
+		}
+		println!("");
+		
+		for _ in 0..(self.mark_size) {
+			print!("^");
+		}
+		println!("");
 	}
 }
 
@@ -49,6 +93,7 @@ pub enum ErrorCode {
 	ExpectedIdentifier
 }
 
-enum ErrorType {
-	Tell
+enum ErrorType<'a> {
+	Tell,
+	Show(Excerpt<'a>)
 }
