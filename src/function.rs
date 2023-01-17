@@ -1,7 +1,9 @@
 use crate::parser::{Parser, CheckForStringResult, SkipWhitespaceResult, ParseFunctionIdentifierResult};
 use crate::error::{Error, ErrorCode};
 
-pub fn parse_function<'a>(parser: &'a mut Parser<'a>) -> ParseFunctionResult<'a> {	
+use std::string::String;
+
+pub fn parse_function(parser: &mut Parser) -> ParseFunctionResult {	
 	match parser.check_for_string("fn") {
 		CheckForStringResult::Error(error) => {
 			return ParseFunctionResult::Error(error)
@@ -37,7 +39,7 @@ pub fn parse_function<'a>(parser: &'a mut Parser<'a>) -> ParseFunctionResult<'a>
 			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::ExpectedIdentifier))
 		},
 		ParseFunctionIdentifierResult::GotIt(it) => {
-			identifier = it;
+			identifier = String::from(it);
 		}
 	}
 	
@@ -78,11 +80,13 @@ pub fn parse_function<'a>(parser: &'a mut Parser<'a>) -> ParseFunctionResult<'a>
 		CheckForStringResult::FoundIt => {}
 	}
 	
+	println!("{}", identifier);
+	
 	return ParseFunctionResult::Error(Error::new_tell(ErrorCode::NotImplemented))
 }
 
-pub enum ParseFunctionResult<'a> {
-	Error(Error<'a>),
+pub enum ParseFunctionResult {
+	Error(Error),
 	StartedAtBufferEnd,
 	NoFunction
 }

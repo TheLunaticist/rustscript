@@ -1,5 +1,5 @@
 use crate::byte_crawler::{ByteCrawler, GetNextResult};
-use crate::error::Error;
+use crate::error::{Error};
 
 use std::str;
 
@@ -14,7 +14,7 @@ impl<'a> Parser<'a> {
 		}
 	}
 	
-	pub fn check_for_string(&'a mut self, string: &str) -> CheckForStringResult<'a> {
+	pub fn check_for_string(&mut self, string: &str) -> CheckForStringResult {
 		let start_pos = self.crawler.get_pos();
 		let mut on_first_char = true; 
 		
@@ -45,7 +45,7 @@ impl<'a> Parser<'a> {
 		return CheckForStringResult::FoundIt
 	}
 	
-	pub fn skip_whitespace(&'a mut self) -> SkipWhitespaceResult<'a> {
+	pub fn skip_whitespace(&mut self) -> SkipWhitespaceResult {
 		loop {
 			let last_pos = self.crawler.get_pos();
 			match self.crawler.get_next() {
@@ -100,21 +100,21 @@ impl<'a> Parser<'a> {
 	}
 }
 
-pub enum CheckForStringResult<'a> {
-	Error(Error<'a>),
+pub enum CheckForStringResult {
+	Error(Error),
 	StartedAtBufferEnd,
 	FoundNothing,
 	FoundIt
 }
 
-pub enum SkipWhitespaceResult<'a> {
-	Error(Error<'a>),
+pub enum SkipWhitespaceResult {
+	Error(Error),
 	ReachedBufferEnd,
 	DidIt
 }
 
 pub enum ParseFunctionIdentifierResult<'a> {
-	Error(Error<'a>),
+	Error(Error),
 	GotIt(&'a str),
 	ReachedBufferEnd,
 	FoundNothing
