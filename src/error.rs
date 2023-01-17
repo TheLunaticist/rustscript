@@ -1,9 +1,11 @@
-pub struct Error<'a> {
-	error_type: ErrorType<'a>,
+use crate::relative_slice::RelativeSlice;
+
+pub struct Error {
+	error_type: ErrorType,
 	code: ErrorCode
 }
 
-impl<'a> Error<'a> {
+impl Error {
 	pub fn new_tell(code: ErrorCode) -> Self {
 		Self {
 			code: code,
@@ -11,7 +13,7 @@ impl<'a> Error<'a> {
 		}
 	}
 	
-	pub fn new_show(code: ErrorCode, excerpt: Excerpt<'a>) -> Self {
+	pub fn new_show(code: ErrorCode, excerpt: Excerpt) -> Self {
 		Self {
 			code: code,
 			error_type: ErrorType::Show(excerpt)
@@ -42,34 +44,36 @@ impl<'a> Error<'a> {
 			}
 		}
 		
-		match self.error_type {
+		match &self.error_type {
 			ErrorType::Tell => {},
 			ErrorType::Show(excerpt) => {
-				excerpt.print();
+				//excerpt.print();
 			}
 		}
 	}
 }
 
-struct Excerpt<'a> {
-	excerpt: &'a str,
+pub struct Excerpt{
+	excerpt: RelativeSlice,
 	mark_start: usize,
 	mark_size: usize
 }
 
-impl<'a> Excerpt<'a> {
-	pub fn new(buf: &str, start: usize, size: usize) -> Self {
+impl Excerpt {
+	fn new(buf: RelativeSlice, start: usize, size: usize) -> Self {
 		Excerpt {
 			excerpt: buf,
 			mark_start: start,
 			mark_size: size
 		}
 	}
-	
-	pub fn print(&self) {
-		print!("{}", self.excerpt);
+
+	pub fn print(&self, buf: &str) {
+		let true_slice = self.excerpt.get_true_slice(buf);
 		
-		for c in self.excerpt.chars() {
+		print!("{}", true_slice);
+		
+		for c in true_slice.chars() {
 			print!("{c}");
 		}
 		
@@ -93,7 +97,7 @@ pub enum ErrorCode {
 	ExpectedIdentifier
 }
 
-enum ErrorType<'a> {
+enum ErrorType {
 	Tell,
-	Show(Excerpt<'a>)
+	Show(Excerpt)
 }

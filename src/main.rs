@@ -2,6 +2,7 @@ mod function;
 mod byte_crawler;
 mod parser;
 mod error;
+mod relative_slice;
 
 use crate::function::{parse_function, ParseFunctionResult};
 use crate::parser::Parser;
@@ -36,7 +37,7 @@ fn run_rss(code_buf: &str) -> RunRssResult {
 	return RunRssResult::Error(Error::new_tell(ErrorCode::NothingFittingFound));
 }
 
-enum RunRssResult<'a> {
+enum RunRssResult {
 	Finished,
-	Error(Error<'a>)
+	Error(Error)
 }
