@@ -24,17 +24,23 @@ fn main() {
 fn run_rss(code_buf: &str) -> RunRssResult {
 	let mut parser = Parser::new(code_buf);
 	
-	match parse_function(&mut parser) {
-		ParseFunctionResult::Error(error) => {
-			return RunRssResult::Error(error);
-		},
-		ParseFunctionResult::StartedAtBufferEnd => {
-			return RunRssResult::Finished
-		},
-		ParseFunctionResult::NoFunction => {}
+	loop {
+		match parse_function(&mut parser) {
+			ParseFunctionResult::Error(error) => {
+				return RunRssResult::Error(error)
+			},
+			ParseFunctionResult::StartedAtBufferEnd => {
+				return RunRssResult::Finished
+			},
+			ParseFunctionResult::NoFunction => {},
+			ParseFunctionResult::GotFunction(name, func) => {
+				println!("Function was parsed but not saved. Name: {}", &name);
+				continue
+			}
+		}
+		
+		return RunRssResult::Error(Error::new_tell(ErrorCode::NothingFittingFound));
 	}
-	
-	return RunRssResult::Error(Error::new_tell(ErrorCode::NothingFittingFound));
 }
 
 enum RunRssResult {
