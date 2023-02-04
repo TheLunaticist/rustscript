@@ -1,23 +1,25 @@
+use std::string::String;
+
 use crate::parser::{Parser, ParseLowercaseIdentifierResult, CheckForStringResult};
-use crate::error::{ErrorCode, Error, OperationError, MiscError};
+use crate::error::{ErrorCode, Error, OperationError};
 
 pub fn parse_operation(parser: &mut Parser) -> ParseOperationResult {
 	//todo: check for all the operations that may use keywords first
 	
 	//this must be a function call
-	let identifier;
+	let fun_identifier;
 	match parser.parse_lowercase_identifier() {
 		ParseLowercaseIdentifierResult::Error(error) => {
 			return ParseOperationResult::Error(error)
 		},
 		ParseLowercaseIdentifierResult::ReachedBufferEnd => {
-			return ParseOperationResult::Error(Error::new_tell(ErrorCode::Operation(OperationError::CallIsNotFinished)))
+			return ParseOperationResult::Error(Error::new_tell(ErrorCode::Operation(OperationError::CallIsNotFinished), parser.get_char_pos()))
 		},
 		ParseLowercaseIdentifierResult::FoundNothing => {
-			return ParseOperationResult::NoIdentifier
+			return ParseOperationResult::NoOperation
 		},
 		ParseLowercaseIdentifierResult::GotIt(it) => {
-			identifier = String::from(it);
+			fun_identifier = String::from(it);
 		}
 	}
 	
@@ -29,18 +31,23 @@ pub fn parse_operation(parser: &mut Parser) -> ParseOperationResult {
 			return ParseOperationResult::StartedAtBufferEnd
 		},
 		CheckForStringResult::FoundNothing => {
-			return ParseOperationResult::Error(Error::new_tell(ErrorCode::Operation(OperationError::CallNotClosed)))
+			return ParseOperationResult::Error(Error::new_tell(ErrorCode::Operation(OperationError::CallNotClosed), parser.get_char_pos()))
 		},
 		CheckForStringResult::FoundIt => {}
 	}
 	
-	return ParseOperationResult::Error(Error::new_tell(ErrorCode::Misc(MiscError::NotImplemented)))
+	return ParseOperationResult::GotOperation(Operation::Call(String::from(fun_identifier)));
 }
 
 pub enum ParseOperationResult {
 	Error(Error),
 	StartedAtBufferEnd,
-	NoIdentifier
+	NoOperation,
+	GotOperation(Operation)
+}
+
+pub enum Operation {
+	Call(String)
 }
 
 

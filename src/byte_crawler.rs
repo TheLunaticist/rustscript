@@ -2,14 +2,16 @@ use crate::error::{Error, ErrorCode, MiscError};
 
 pub struct ByteCrawler<'a> {
 	buf: &'a [u8],
-	pos: usize
+	pos: usize,
+	char_pos: usize
 }
 
 impl<'a> ByteCrawler<'a> {
 	pub fn new(buf: &'a str) -> Self {
 		Self {
 			buf: buf.as_bytes(),
-			pos: 0
+			pos: 0,
+			char_pos: 0
 		}
 	}
 	
@@ -40,10 +42,11 @@ impl<'a> ByteCrawler<'a> {
 				res <<= 6; //making space for 6 more bits
 				res |= u32::from(self.buf[self.pos + 1] & 0b00111111); //copying 6 bits
 				self.pos += 2;
+				self.char_pos += 1;
 				return GetNextResult::GotChar(char::from_u32(res).unwrap())
 			} else if first & MASK_FOURTH_BIT == 0 { //three bytes
 				if self.pos + 3 > self.buf.len() {
-					return GetNextResult::Error(Error::new_tell(ErrorCode::Misc(MiscError::InvalidUTF8)))
+					return GetNextResult::Error(Error::new_tell(ErrorCode::Misc(MiscError::InvalidUTF8), self.char_pos))
 				}
 				let mut res = u32::from(first & 0b00001111); //zeroing first four
 				res <<= 6; //making space for 6 more bits
@@ -51,10 +54,11 @@ impl<'a> ByteCrawler<'a> {
 				res <<= 6; //making space for even more bits
 				res |= u32::from(self.buf[self.pos + 2] & 0b00111111);
 				self.pos += 3;
+				self.char_pos += 1;
 				return GetNextResult::GotChar(char::from_u32(res).unwrap());
-			} else if first & MASK_FIFTH_BIT == 0 {
+			} else if first & MASK_FIFTH_BIT == 0 { //four bytes
 				if self.pos + 4 > self.buf.len() {
-					return GetNextResult::Error(Error::new_tell(ErrorCode::Misc(MiscError::InvalidUTF8)))
+					return GetNextResult::Error(Error::new_tell(ErrorCode::Misc(MiscError::InvalidUTF8), self.char_pos))
 				}
 				let mut res = u32::from(first & 0b00000111); //zeroing first five
 				res <<= 6; //making space for 6 more bits
@@ -64,11 +68,12 @@ impl<'a> ByteCrawler<'a> {
 				res <<= 6; //and even more
 				res |= u32::from(self.buf[self.pos + 3] & 0b00111111);
 				self.pos += 4;
+				self.char_pos += 1;
 				return GetNextResult::GotChar(char::from_u32(res).unwrap());
 			}
 		}
 		
-		return GetNextResult::Error(Error::new_tell(ErrorCode::Misc(MiscError::InvalidUTF8)))
+		return GetNextResult::Error(Error::new_tell(ErrorCode::Misc(MiscError::InvalidUTF8), self.char_pos))
 	}
 	
 	pub fn get_pos(&self) -> usize {
@@ -81,6 +86,10 @@ impl<'a> ByteCrawler<'a> {
 	
 	pub fn get_buf(&self) -> &[u8] {
 		return self.buf
+	}
+	
+	pub fn get_char_pos(&self) -> usize {
+		return self.char_pos
 	}
 }
 

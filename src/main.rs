@@ -10,7 +10,7 @@ use crate::parser::Parser;
 use crate::error::{Error, ErrorCode, GlobalError};
 
 fn main() {
-	let code_buf = "fn test() {}";
+	let code_buf = "fn test() { get(); }";
 	
 	match run_rss(code_buf) {
 		RunRssResult::Finished => {
@@ -34,13 +34,13 @@ fn run_rss(code_buf: &str) -> RunRssResult {
 				return RunRssResult::Finished
 			},
 			ParseFunctionResult::NoFunction => {},
-			ParseFunctionResult::GotFunction(name, func) => {
+			ParseFunctionResult::GotFunction(name, _func) => {
 				println!("Function was parsed but not saved. Name: {}", &name);
 				continue
 			}
 		}
 		
-		return RunRssResult::Error(Error::new_tell(ErrorCode::Global(GlobalError::NothingFittingFound)))
+		return RunRssResult::Error(Error::new_tell(ErrorCode::Global(GlobalError::NothingFittingFound), parser.get_char_pos()))
 	}
 }
 

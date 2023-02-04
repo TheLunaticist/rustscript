@@ -98,6 +98,10 @@ impl<'a> Parser<'a> {
 			}
 		}
 	}
+	
+	pub fn get_char_pos(&self) -> usize {
+		return self.crawler.get_char_pos()
+	}
 }
 
 pub enum CheckForStringResult {

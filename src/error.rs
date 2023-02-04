@@ -2,25 +2,29 @@ use crate::relative_slice::RelativeSlice;
 
 pub struct Error {
 	error_type: ErrorType,
-	code: ErrorCode
+	code: ErrorCode,
+	pos: usize
 }
 
 impl Error {
-	pub fn new_tell(code: ErrorCode) -> Self {
+	pub fn new_tell(code: ErrorCode, error_pos: usize) -> Self {
 		Self {
 			code: code,
-			error_type: ErrorType::Tell
+			error_type: ErrorType::Tell,
+			pos: error_pos
 		}
 	}
 	
-	pub fn new_show(code: ErrorCode, excerpt: Excerpt) -> Self {
+	pub fn new_show(code: ErrorCode, excerpt: Excerpt, error_pos: usize) -> Self {
 		Self {
 			code: code,
-			error_type: ErrorType::Show(excerpt)
+			error_type: ErrorType::Show(excerpt),
+			pos: error_pos
 		}
 	}
 	
 	pub fn print(&self, buf: &str) {
+		println!("There was an error at line {}.", self.pos);
 		match &self.code {
 			/* Misc */
 			ErrorCode::Misc(error) => {
@@ -54,6 +58,10 @@ impl Error {
 					FunctionError::FunctionNeverEnds => {
 						println!("Error: FunctionNeverEnds");
 						println!("While parsing a function we hit the buffer end.");
+					},
+					FunctionError::UnexpectedBufferEnd => {
+						println!("Error: UnexpectedBufferEnd");
+						println!("There's just nothing remaining in buffer while trying to parse a function.");
 					}
 				}
 			},
@@ -135,7 +143,8 @@ pub enum GlobalError {
 
 pub enum FunctionError {
 	ExpectedIdentifier,
-	FunctionNeverEnds
+	FunctionNeverEnds,
+	UnexpectedBufferEnd
 }
 
 pub enum OperationError {

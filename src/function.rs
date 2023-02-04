@@ -1,7 +1,8 @@
-use crate::parser::{Parser, CheckForStringResult, SkipWhitespaceResult, ParseLowercaseIdentifierResult};
-use crate::error::{Error, ErrorCode, FunctionError, MiscError};
-
 use std::string::String;
+
+use crate::parser::{Parser, CheckForStringResult, SkipWhitespaceResult, ParseLowercaseIdentifierResult};
+use crate::error::{Error, ErrorCode, FunctionError};
+use crate::operation::{parse_operation, ParseOperationResult, Operation};
 
 pub fn parse_function(parser: &mut Parser) -> ParseFunctionResult {	
 	match parser.check_for_string("fn") {
@@ -22,7 +23,7 @@ pub fn parse_function(parser: &mut Parser) -> ParseFunctionResult {
 			return ParseFunctionResult::Error(error)
 		},
 		SkipWhitespaceResult::ReachedBufferEnd => {
-			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::FunctionNeverEnds)))
+			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::FunctionNeverEnds), parser.get_char_pos()))
 		},
 		SkipWhitespaceResult::DidIt => {}
 	}
@@ -33,10 +34,10 @@ pub fn parse_function(parser: &mut Parser) -> ParseFunctionResult {
 			return ParseFunctionResult::Error(error)
 		},
 		ParseLowercaseIdentifierResult::ReachedBufferEnd => {
-			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::FunctionNeverEnds)))
+			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::FunctionNeverEnds), parser.get_char_pos()))
 		},
 		ParseLowercaseIdentifierResult::FoundNothing => {
-			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::ExpectedIdentifier)))
+			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::ExpectedIdentifier), parser.get_char_pos()))
 		},
 		ParseLowercaseIdentifierResult::GotIt(it) => {
 			identifier = String::from(it);
@@ -49,33 +50,65 @@ pub fn parse_function(parser: &mut Parser) -> ParseFunctionResult {
 			return ParseFunctionResult::Error(error)
 		},
 		CheckForStringResult::StartedAtBufferEnd => {
-			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::FunctionNeverEnds)))
+			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::FunctionNeverEnds), parser.get_char_pos()))
 		},
 		CheckForStringResult::FoundNothing => {
-			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::FunctionNeverEnds)))
+			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::FunctionNeverEnds), parser.get_char_pos()))
 		},
 		CheckForStringResult::FoundIt => {}
 	}
-	
+	println!("skipping whitespace after {{");
 	match parser.skip_whitespace() {
 		SkipWhitespaceResult::Error(error) => {
 			return ParseFunctionResult::Error(error)
 		},
 		SkipWhitespaceResult::ReachedBufferEnd => {
-			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::FunctionNeverEnds)))
+			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::FunctionNeverEnds), parser.get_char_pos()))
 		},
 		SkipWhitespaceResult::DidIt => {}
 	}
 	
+	
+	let mut ops: Vec<Operation> = vec!();
+	
+	loop {
+		match parse_operation(parser) {
+			ParseOperationResult::Error(error) => {
+				return ParseFunctionResult::Error(error);
+			},
+			ParseOperationResult::StartedAtBufferEnd => {
+				return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::UnexpectedBufferEnd), parser.get_char_pos()))
+			},
+			ParseOperationResult::NoOperation => {
+				break
+			},
+			ParseOperationResult::GotOperation(op) => {
+				ops.push(op);
+			}
+		}
+		
+		match parser.skip_whitespace() {
+			SkipWhitespaceResult::Error(error) => {
+				return ParseFunctionResult::Error(error)
+			},
+			SkipWhitespaceResult::ReachedBufferEnd => {
+				return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::FunctionNeverEnds), parser.get_char_pos()))
+			},
+			SkipWhitespaceResult::DidIt => {}
+		}
+	}
+	
+	
+	println!("checking for closing }}");
 	match parser.check_for_string("}") {
 		CheckForStringResult::Error(error) => {
 			return ParseFunctionResult::Error(error)
 		},
 		CheckForStringResult::StartedAtBufferEnd => {
-			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::FunctionNeverEnds)))
+			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::FunctionNeverEnds), parser.get_char_pos()))
 		},
 		CheckForStringResult::FoundNothing => {
-			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::FunctionNeverEnds)))
+			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::FunctionNeverEnds), parser.get_char_pos()))
 		},
 		CheckForStringResult::FoundIt => {}
 	}
