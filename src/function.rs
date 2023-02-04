@@ -80,13 +80,16 @@ pub fn parse_function(parser: &mut Parser) -> ParseFunctionResult {
 		CheckForStringResult::FoundIt => {}
 	}
 	
-	println!("{}", identifier);
+	return ParseFunctionResult::GotFunction(identifier, Function {})
+}
+
+pub struct Function {
 	
-	return ParseFunctionResult::Error(Error::new_tell(ErrorCode::NotImplemented))
 }
 
 pub enum ParseFunctionResult {
 	Error(Error),
 	StartedAtBufferEnd,
-	NoFunction
+	NoFunction,
+	GotFunction(String, Function)
 }
