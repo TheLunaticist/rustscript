@@ -1,5 +1,5 @@
 use crate::parser::{Parser, CheckForStringResult, SkipWhitespaceResult, ParseLowercaseIdentifierResult};
-use crate::error::{Error, ErrorCode};
+use crate::error::{Error, ErrorCode, FunctionError, MiscError};
 
 use std::string::String;
 
@@ -36,7 +36,7 @@ pub fn parse_function(parser: &mut Parser) -> ParseFunctionResult {
 			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::FunctionNeverEnds)))
 		},
 		ParseLowercaseIdentifierResult::FoundNothing => {
-			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::ExpectedIdentifier))
+			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::ExpectedIdentifier)))
 		},
 		ParseLowercaseIdentifierResult::GotIt(it) => {
 			identifier = String::from(it);
@@ -49,10 +49,10 @@ pub fn parse_function(parser: &mut Parser) -> ParseFunctionResult {
 			return ParseFunctionResult::Error(error)
 		},
 		CheckForStringResult::StartedAtBufferEnd => {
-			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::FunctionNeverEnds))
+			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::FunctionNeverEnds)))
 		},
 		CheckForStringResult::FoundNothing => {
-			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::FunctionNeverEnds))
+			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::FunctionNeverEnds)))
 		},
 		CheckForStringResult::FoundIt => {}
 	}
@@ -62,7 +62,7 @@ pub fn parse_function(parser: &mut Parser) -> ParseFunctionResult {
 			return ParseFunctionResult::Error(error)
 		},
 		SkipWhitespaceResult::ReachedBufferEnd => {
-			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::FunctionNeverEnds))
+			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::FunctionNeverEnds)))
 		},
 		SkipWhitespaceResult::DidIt => {}
 	}
@@ -72,10 +72,10 @@ pub fn parse_function(parser: &mut Parser) -> ParseFunctionResult {
 			return ParseFunctionResult::Error(error)
 		},
 		CheckForStringResult::StartedAtBufferEnd => {
-			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::FunctionNeverEnds))
+			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::FunctionNeverEnds)))
 		},
 		CheckForStringResult::FoundNothing => {
-			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::FunctionNeverEnds))
+			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::FunctionNeverEnds)))
 		},
 		CheckForStringResult::FoundIt => {}
 	}

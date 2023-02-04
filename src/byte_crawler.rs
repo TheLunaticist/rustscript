@@ -1,4 +1,4 @@
-use crate::error::{Error, ErrorCode};
+use crate::error::{Error, ErrorCode, MiscError};
 
 pub struct ByteCrawler<'a> {
 	buf: &'a [u8],

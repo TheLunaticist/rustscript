@@ -21,7 +21,7 @@ impl Error {
 	}
 	
 	pub fn print(&self, buf: &str) {
-		match self.code {
+		match &self.code {
 			/* Misc */
 			ErrorCode::Misc(error) => {
 				match error {
@@ -63,6 +63,10 @@ impl Error {
 					OperationError::CallNotClosed => {
 						println!("Error: CallNotClosed");
 						println!("What was obviously a function call didn't have any closing () thingies");
+					},
+					OperationError::CallIsNotFinished => {
+						println!("Error: CallIsNotFinished");
+						println!("A call to a function was started but the program ended suddenly.");
 					}
 				}
 			}
@@ -135,7 +139,8 @@ pub enum FunctionError {
 }
 
 pub enum OperationError {
-	CallNotClosed
+	CallNotClosed,
+	CallIsNotFinished
 }
 
 

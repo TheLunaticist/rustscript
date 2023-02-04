@@ -17,7 +17,7 @@ fn main() {
 			println!("successfully executed code");
 		},
 		RunRssResult::Error(error) => {
-			error.print();
+			error.print(code_buf);
 		}
 	}
 }

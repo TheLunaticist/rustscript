@@ -1,5 +1,5 @@
 use crate::parser::{Parser, ParseLowercaseIdentifierResult, CheckForStringResult};
-use crate::error::{ErrorCode, Error};
+use crate::error::{ErrorCode, Error, OperationError, MiscError};
 
 pub fn parse_operation(parser: &mut Parser) -> ParseOperationResult {
 	//todo: check for all the operations that may use keywords first
@@ -11,10 +11,10 @@ pub fn parse_operation(parser: &mut Parser) -> ParseOperationResult {
 			return ParseOperationResult::Error(error)
 		},
 		ParseLowercaseIdentifierResult::ReachedBufferEnd => {
-			return ParseOperationResult::Error(Error::new_tell(ErrorCode::FunctionNeverEnds))
+			return ParseOperationResult::Error(Error::new_tell(ErrorCode::Operation(OperationError::CallIsNotFinished)))
 		},
 		ParseLowercaseIdentifierResult::FoundNothing => {
-			return ParseOperationResult::Error(Error::new_tell(ErrorCode::ExpectedIdentifier))
+			return ParseOperationResult::NoIdentifier
 		},
 		ParseLowercaseIdentifierResult::GotIt(it) => {
 			identifier = String::from(it);
@@ -29,18 +29,18 @@ pub fn parse_operation(parser: &mut Parser) -> ParseOperationResult {
 			return ParseOperationResult::StartedAtBufferEnd
 		},
 		CheckForStringResult::FoundNothing => {
-			return ParseOperationResult::Error(Error::new_tell())
+			return ParseOperationResult::Error(Error::new_tell(ErrorCode::Operation(OperationError::CallNotClosed)))
 		},
 		CheckForStringResult::FoundIt => {}
 	}
 	
-	return ParseOperationResult::Error(Error::new_tell(ErrorCode::NotImplemented))
+	return ParseOperationResult::Error(Error::new_tell(ErrorCode::Misc(MiscError::NotImplemented)))
 }
 
 pub enum ParseOperationResult {
 	Error(Error),
 	StartedAtBufferEnd,
-	
+	NoIdentifier
 }
 
 
