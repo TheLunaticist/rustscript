@@ -1,4 +1,4 @@
-use crate::parser::{Parser, CheckForStringResult, SkipWhitespaceResult, ParseFunctionIdentifierResult};
+use crate::parser::{Parser, CheckForStringResult, SkipWhitespaceResult, ParseLowercaseIdentifierResult};
 use crate::error::{Error, ErrorCode};
 
 use std::string::String;
@@ -22,23 +22,23 @@ pub fn parse_function(parser: &mut Parser) -> ParseFunctionResult {
 			return ParseFunctionResult::Error(error)
 		},
 		SkipWhitespaceResult::ReachedBufferEnd => {
-			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::FunctionNeverEnds))
+			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::FunctionNeverEnds)))
 		},
 		SkipWhitespaceResult::DidIt => {}
 	}
 	
 	let identifier;
-	match parser.parse_function_identifier() {
-		ParseFunctionIdentifierResult::Error(error) => {
+	match parser.parse_lowercase_identifier() {
+		ParseLowercaseIdentifierResult::Error(error) => {
 			return ParseFunctionResult::Error(error)
 		},
-		ParseFunctionIdentifierResult::ReachedBufferEnd => {
-			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::FunctionNeverEnds))
+		ParseLowercaseIdentifierResult::ReachedBufferEnd => {
+			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::Function(FunctionError::FunctionNeverEnds)))
 		},
-		ParseFunctionIdentifierResult::FoundNothing => {
+		ParseLowercaseIdentifierResult::FoundNothing => {
 			return ParseFunctionResult::Error(Error::new_tell(ErrorCode::ExpectedIdentifier))
 		},
-		ParseFunctionIdentifierResult::GotIt(it) => {
+		ParseLowercaseIdentifierResult::GotIt(it) => {
 			identifier = String::from(it);
 		}
 	}

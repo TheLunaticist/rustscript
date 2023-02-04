@@ -66,18 +66,18 @@ impl<'a> Parser<'a> {
 		}
 	}
 	
-	pub fn parse_function_identifier(&mut self) -> ParseFunctionIdentifierResult {
+	pub fn parse_lowercase_identifier(&mut self) -> ParseLowercaseIdentifierResult {
 		let start_pos = self.crawler.get_pos();
 		let mut num_chars = 0;
 		loop {
 			let last_pos = self.crawler.get_pos();
 			match self.crawler.get_next() {
 				GetNextResult::Error(error) => {
-					return ParseFunctionIdentifierResult::Error(error)
+					return ParseLowercaseIdentifierResult::Error(error)
 				},
 				GetNextResult::ReachedBufferEnd => {
 					self.crawler.set_pos(last_pos);
-					return ParseFunctionIdentifierResult::ReachedBufferEnd
+					return ParseLowercaseIdentifierResult::ReachedBufferEnd
 				},
 				GetNextResult::GotChar(ch) => {
 					match u32::from(ch) {
@@ -87,10 +87,10 @@ impl<'a> Parser<'a> {
 						_ => {
 							self.crawler.set_pos(last_pos);
 							if num_chars == 0 {
-								return ParseFunctionIdentifierResult::FoundNothing
+								return ParseLowercaseIdentifierResult::FoundNothing
 							}
 							unsafe {
-								return ParseFunctionIdentifierResult::GotIt(str::from_utf8_unchecked(&self.crawler.get_buf()[start_pos..start_pos + num_chars]))
+								return ParseLowercaseIdentifierResult::GotIt(str::from_utf8_unchecked(&self.crawler.get_buf()[start_pos..start_pos + num_chars]))
 							}
 						}
 					}
@@ -113,7 +113,7 @@ pub enum SkipWhitespaceResult {
 	DidIt
 }
 
-pub enum ParseFunctionIdentifierResult<'a> {
+pub enum ParseLowercaseIdentifierResult<'a> {
 	Error(Error),
 	GotIt(&'a str),
 	ReachedBufferEnd,

@@ -20,34 +20,58 @@ impl Error {
 		}
 	}
 	
-	pub fn print(&self) {
+	pub fn print(&self, buf: &str) {
 		match self.code {
-			ErrorCode::InvalidUTF8 => {
-				println!("Error: InvalidUTF8");
-				println!("There's invalid UTF8 in the input.");
+			/* Misc */
+			ErrorCode::Misc(error) => {
+				match error {
+					MiscError::InvalidUTF8 => {
+						println!("Error: InvalidUTF8");
+						println!("Ran into invalid UTF8 during execution.");
+					},
+					MiscError::NotImplemented => {
+						println!("Error: NotImplemented");
+						println!("Generic error for indicating unfinishedness.");
+					}
+				}
 			},
-			ErrorCode::NotImplemented => {
-				println!("Error: NotImplemented");
-				println!("A function was called that was not finished yet.");
+			/* Global */
+			ErrorCode::Global(error) => {
+				match error {
+					GlobalError::NothingFittingFound => {
+						println!("Error: NothingFittingFound");
+						println!("In the global space nothing did match.");
+					}
+				}
 			},
-			ErrorCode::NothingFittingFound => {
-				println!("Error: NothingFittingFound");
-				println!("No fitting element was found.");
+			/* Function */
+			ErrorCode::Function(error) => {
+				match error {
+					FunctionError::ExpectedIdentifier => {
+						println!("Error: ExpectedIdentifier");
+						println!("While parsing we found that there was no identifier after a fn keyword.");
+					},
+					FunctionError::FunctionNeverEnds => {
+						println!("Error: FunctionNeverEnds");
+						println!("While parsing a function we hit the buffer end.");
+					}
+				}
 			},
-			ErrorCode::FunctionNeverEnds => {
-				println!("Error: FunctionNeverEnds");
-				println!("The code ended before the function ended.");
-			},
-			ErrorCode::ExpectedIdentifier => {
-				println!("Error: ExpectedIdentifier");
-				println!("A function didn't have an (valid) identifier.");
+			/* Operation */
+			ErrorCode::Operation(error) => {
+				match error {
+					OperationError::CallNotClosed => {
+						println!("Error: CallNotClosed");
+						println!("What was obviously a function call didn't have any closing () thingies");
+					}
+				}
 			}
 		}
 		
 		match &self.error_type {
 			ErrorType::Tell => {},
 			ErrorType::Show(excerpt) => {
-				//excerpt.print();
+				excerpt.print(buf);
 			}
 		}
 	}
@@ -90,12 +114,30 @@ impl Excerpt {
 }
 
 pub enum ErrorCode {
-	InvalidUTF8,
-	NotImplemented,
-	NothingFittingFound,
-	FunctionNeverEnds,
-	ExpectedIdentifier
+	Misc(MiscError),
+	Global(GlobalError),
+	Function(FunctionError),
+	Operation(OperationError)
 }
+
+pub enum MiscError {
+	InvalidUTF8,
+	NotImplemented
+}
+
+pub enum GlobalError {
+	NothingFittingFound
+}
+
+pub enum FunctionError {
+	ExpectedIdentifier,
+	FunctionNeverEnds
+}
+
+pub enum OperationError {
+	CallNotClosed
+}
+
 
 enum ErrorType {
 	Tell,

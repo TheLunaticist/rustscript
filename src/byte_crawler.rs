@@ -43,7 +43,7 @@ impl<'a> ByteCrawler<'a> {
 				return GetNextResult::GotChar(char::from_u32(res).unwrap())
 			} else if first & MASK_FOURTH_BIT == 0 { //three bytes
 				if self.pos + 3 > self.buf.len() {
-					return GetNextResult::Error(Error::new_tell(ErrorCode::InvalidUTF8))
+					return GetNextResult::Error(Error::new_tell(ErrorCode::Misc(MiscError::InvalidUTF8)))
 				}
 				let mut res = u32::from(first & 0b00001111); //zeroing first four
 				res <<= 6; //making space for 6 more bits
@@ -54,7 +54,7 @@ impl<'a> ByteCrawler<'a> {
 				return GetNextResult::GotChar(char::from_u32(res).unwrap());
 			} else if first & MASK_FIFTH_BIT == 0 {
 				if self.pos + 4 > self.buf.len() {
-					return GetNextResult::Error(Error::new_tell(ErrorCode::InvalidUTF8))
+					return GetNextResult::Error(Error::new_tell(ErrorCode::Misc(MiscError::InvalidUTF8)))
 				}
 				let mut res = u32::from(first & 0b00000111); //zeroing first five
 				res <<= 6; //making space for 6 more bits
@@ -68,7 +68,7 @@ impl<'a> ByteCrawler<'a> {
 			}
 		}
 		
-		GetNextResult::Error(Error::new_tell(ErrorCode::InvalidUTF8))
+		return GetNextResult::Error(Error::new_tell(ErrorCode::Misc(MiscError::InvalidUTF8)))
 	}
 	
 	pub fn get_pos(&self) -> usize {

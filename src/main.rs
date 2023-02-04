@@ -3,10 +3,11 @@ mod byte_crawler;
 mod parser;
 mod error;
 mod relative_slice;
+mod operation;
 
 use crate::function::{parse_function, ParseFunctionResult};
 use crate::parser::Parser;
-use crate::error::{Error, ErrorCode};
+use crate::error::{Error, ErrorCode, GlobalError};
 
 fn main() {
 	let code_buf = "fn test() {}";
@@ -39,7 +40,7 @@ fn run_rss(code_buf: &str) -> RunRssResult {
 			}
 		}
 		
-		return RunRssResult::Error(Error::new_tell(ErrorCode::NothingFittingFound));
+		return RunRssResult::Error(Error::new_tell(ErrorCode::Global(GlobalError::NothingFittingFound)))
 	}
 }
 
